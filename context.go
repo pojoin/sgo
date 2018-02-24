@@ -1,4 +1,4 @@
-package ak
+package sgo
 
 import (
 	"encoding/json"
