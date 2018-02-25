@@ -32,6 +32,9 @@ func (rt *router) AddRoute(method, pattern string, fn actionFunc) {
 	}
 	log.Printf("addRoute [%s]\t[%s]\t [%v]\n", method, pattern, fn)
 	r := &route{fn: fn, method: method}
+	if !strings.HasSuffix(pattern, "/") {
+		pattern += "/"
+	}
 	r.regex, r.params = rt.parsePattern(pattern)
 	rt.routes = append(rt.routes, r)
 }

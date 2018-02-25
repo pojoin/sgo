@@ -19,13 +19,13 @@ func (l *loginFilter) Execute(ctx *sgo.Context) (ok bool) {
 
 func main() {
 
-	sgo.AddFilter(&loginFilter{})
+	//sgo.AddFilter(&loginFilter{})
 
 	sgo.AddRoute(sgo.GET, "/hello/:name/ok/", func(ctx *sgo.Context) {
 		ctx.WriteJson("hello , " + ctx.Params["name"])
 	})
 
-	sgo.AddRoute(sgo.GET, "/test/", func(ctx *sgo.Context) {
+	sgo.AddRoute(sgo.GET, "/test", func(ctx *sgo.Context) {
 		ctx.Data["name"] = "张三"
 		ctx.WriteTpl("text.html")
 	})
