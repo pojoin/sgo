@@ -211,7 +211,6 @@ func parseResult(rows *bsql.Rows, results *[]Row) error {
 			}
 
 		}
-		fmt.Println(row)
 		*results = append(*results, row)
 	}
 	return err

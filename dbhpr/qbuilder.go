@@ -76,7 +76,7 @@ func (q *QBuilder) Limit(size ...int) *QBuilder {
 }
 
 func (q *QBuilder) LeftJoin(table string) *QBuilder {
-	q.join += fmt.Sprintf(" left join %v ", table)
+	q.join += fmt.Sprintf(" left outer join %v ", table)
 	return q
 }
 
@@ -142,10 +142,15 @@ func (q *QBuilder) QueryPage(page *Page, dbname ...string) error {
 	var count int64
 	r := db.QueryRow(q.Csql())
 	err := r.Scan(&count)
+	if err != nil {
+		return err
+	}
 	page.Count = count
 	if count == 0 {
 		page.List = make([]Row, 0)
 		return nil
+	} else {
+		page.List = make([]Row, 0, count)
 	}
 	q.Limit(page.StartRow(), page.PageSize)
 	//stmt
@@ -161,9 +166,7 @@ func (q *QBuilder) QueryPage(page *Page, dbname ...string) error {
 		return err
 	}
 	defer rows.Close()
-	results := make([]Row, 0, count)
-	err = parseResult(rows, &results)
-	page.List = results
+	err = parseResult(rows, &page.List)
 	return err
 
 }
