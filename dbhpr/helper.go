@@ -16,9 +16,19 @@ func (r Row) GetInt64(col string) int64 {
 	switch v := r[col].(type) {
 	case int8:
 		value = int64(v)
+	case uint:
+		value = int64(v)
+	case uint16:
+		value = int64(v)
 	case int16:
 		value = int64(v)
 	case int32:
+		value = int64(v)
+	case uint32:
+		value = int64(v)
+	case uint8:
+		value = int64(v)
+	case uint64:
 		value = int64(v)
 	case int:
 		value = int64(v)
@@ -28,6 +38,38 @@ func (r Row) GetInt64(col string) int64 {
 	return value
 }
 
+func (r Row) GetUint64(col string) uint64 {
+	return uint64(r.GetInt64(col))
+}
+
+func (r Row) GetInt8(col string) int8 {
+	return int8(r.GetInt64(col))
+}
+
+func (r Row) GetUint8(col string) uint8 {
+	return uint8(r.GetInt64(col))
+}
+
+func (r Row) GetInt16(col string) int16 {
+	return int16(r.GetInt64(col))
+}
+
+func (r Row) GetUint16(col string) uint16 {
+	return uint16(r.GetInt64(col))
+}
+
+func (r Row) GetInt32(col string) int32 {
+	return int32(r.GetInt64(col))
+}
+
+func (r Row) GetUint32(col string) uint32 {
+	return uint32(r.GetInt64(col))
+}
+
+func (r Row) GetUint(col string) uint {
+	return uint(r.GetInt64(col))
+}
+
 func (r Row) GetInt(col string) int {
 	return int(r.GetInt64(col))
 }
@@ -35,6 +77,17 @@ func (r Row) GetInt(col string) int {
 func (r Row) GetString(col string) string {
 	v, _ := r[col].(string)
 	return v
+}
+
+func (r Row) GetFloat64(col string) float64 {
+	var value float64
+	switch v := r[col].(type) {
+	case float32:
+		value = float64(v)
+	case float64:
+		value = float64(v)
+	}
+	return value
 }
 
 func (r Row) Append(col string, v interface{}) error {
