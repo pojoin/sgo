@@ -88,7 +88,7 @@ func (h *DBHelper) Query(sql string, args ...interface{}) ([]Row, error) {
 	}
 	defer rows.Close()
 	results := make([]Row, 0)
-	err = parseResult(rows, results)
+	err = parseResult(rows, &results)
 	return results, err
 }
 
@@ -146,12 +146,12 @@ func (h *DBHelper) QueryPage(page *Page, sql string, args ...interface{}) error 
 	}
 	defer rows.Close()
 	results := make([]Row, 0, page.Count)
-	err = parseResult(rows, results)
+	err = parseResult(rows, &results)
 	page.List = results
 	return err
 }
 
-func parseResult(rows *bsql.Rows, results []Row) error {
+func parseResult(rows *bsql.Rows, results *[]Row) error {
 	columnTypes, err := rows.ColumnTypes()
 	if err != nil {
 		return err
@@ -211,7 +211,8 @@ func parseResult(rows *bsql.Rows, results []Row) error {
 			}
 
 		}
-		results = append(results, row)
+		fmt.Println(row)
+		*results = append(*results, row)
 	}
 	return err
 }

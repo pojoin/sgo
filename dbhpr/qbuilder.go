@@ -129,7 +129,7 @@ func (q *QBuilder) Query(dbname ...string) ([]Row, error) {
 	}
 	defer rows.Close()
 	results := make([]Row, 0)
-	err = parseResult(rows, results)
+	err = parseResult(rows, &results)
 	return results, err
 }
 
@@ -162,7 +162,7 @@ func (q *QBuilder) QueryPage(page *Page, dbname ...string) error {
 	}
 	defer rows.Close()
 	results := make([]Row, 0, count)
-	err = parseResult(rows, results)
+	err = parseResult(rows, &results)
 	page.List = results
 	return err
 
