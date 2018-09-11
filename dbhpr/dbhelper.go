@@ -10,11 +10,15 @@ import (
 	"github.com/go-sql-driver/mysql"
 )
 
-type DBHelper struct {
+type MySqlHelper struct {
 	dbname string
 }
 
-func (h *DBHelper) Exec(sql string, args ...interface{}) (rowsAffected int64, err error) {
+func (h *MySqlHelper) isColumnExist(table, col string) bool {
+	return false
+}
+
+func (h *MySqlHelper) Exec(sql string, args ...interface{}) (rowsAffected int64, err error) {
 	stmt, err := dbHive[h.dbname].Prepare(sql)
 	if err != nil {
 		return 0, err
@@ -28,7 +32,7 @@ func (h *DBHelper) Exec(sql string, args ...interface{}) (rowsAffected int64, er
 	return
 }
 
-func (h *DBHelper) Insert(sql string, args ...interface{}) (lastInsterId int64, err error) {
+func (h *MySqlHelper) Insert(sql string, args ...interface{}) (lastInsterId int64, err error) {
 	stmt, err := dbHive[h.dbname].Prepare(sql)
 	if err != nil {
 		return 0, err
@@ -42,7 +46,67 @@ func (h *DBHelper) Insert(sql string, args ...interface{}) (lastInsterId int64, 
 	return
 }
 
-func (h *DBHelper) Update(sql string, args ...interface{}) (rowsAffected int64, err error) {
+func (h *MySqlHelper) InsertRow(tableName string, row Row) (lastInsterId int64, err error) {
+	db := dbHive[h.dbname]
+	rows, err := db.Query("show columns from %s", tableName)
+	if err != nil {
+		return 0, err
+	}
+	columns := Row(make(map[string]interface{}))
+	for rows.Next() {
+		var field, vtype string
+		rows.Scan(&field, &vtype)
+		columns[field] = vtype
+	}
+	rows.Close()
+
+	fields := make([]string, 0)
+	placeholders := make([]string, 0)
+	values := make([]interface{}, 0)
+	for f, v := range row {
+		if columns.IsExists(f) {
+			fields = append(fields, f)
+			placeholders = append(placeholders, "?")
+			values = append(values, v)
+		}
+	}
+	sql := fmt.Sprintf("insert into %s(%s) values(%s)", tableName, strings.Join(fields, ","), strings.Join(placeholders, ","))
+	return h.Insert(sql, values...)
+}
+
+func (h *MySqlHelper) UpdateRow(tableName string, row Row) (rowsAffected int64, err error) {
+	db := dbHive[h.dbname]
+	rows, err := db.Query("show columns from %s", tableName)
+	if err != nil {
+		return 0, err
+	}
+	columns := Row(make(map[string]interface{}))
+	for rows.Next() {
+		var field, vtype string
+		rows.Scan(&field, &vtype)
+		columns[field] = vtype
+	}
+	rows.Close()
+	fields := make([]interface{}, 0)
+	var cond string
+	idValue := make([]interface{}, 1)
+	var values = make([]interface{}, 0)
+	for f, v := range row {
+		if columns.IsExists(f) {
+			if strings.ToLower(f) == "id" {
+				cond = f + "=?"
+				idValue[0] = v
+			}
+			fields = append(fields, f+"=?")
+			values = append(values, v)
+		}
+	}
+	values = append(values, idValue[0])
+	sql := fmt.Sprintf("update %s set %s where %s", tableName, fields, cond)
+	return h.Update(sql, values)
+}
+
+func (h *MySqlHelper) Update(sql string, args ...interface{}) (rowsAffected int64, err error) {
 	stmt, err := dbHive[h.dbname].Prepare(sql)
 	if err != nil {
 		return 0, err
@@ -56,11 +120,11 @@ func (h *DBHelper) Update(sql string, args ...interface{}) (rowsAffected int64, 
 	return
 }
 
-func (h *DBHelper) Delete(sql string, args ...interface{}) (rowsAffected int64, err error) {
+func (h *MySqlHelper) Delete(sql string, args ...interface{}) (rowsAffected int64, err error) {
 	return h.Update(sql, args...)
 }
 
-func (h *DBHelper) Get(sql string, args ...interface{}) (Row, error) {
+func (h *MySqlHelper) Get(sql string, args ...interface{}) (Row, error) {
 	if !strings.Contains(strings.ToLower(sql), "limit") {
 		sql += " limit 1 "
 	}
@@ -75,7 +139,7 @@ func (h *DBHelper) Get(sql string, args ...interface{}) (Row, error) {
 	return rows[0], nil
 }
 
-func (h *DBHelper) Query(sql string, args ...interface{}) ([]Row, error) {
+func (h *MySqlHelper) Query(sql string, args ...interface{}) ([]Row, error) {
 	// fmt.Println("sql = ", sql, args)
 	stmt, err := dbHive[h.dbname].Prepare(sql)
 	if err != nil {
@@ -92,7 +156,7 @@ func (h *DBHelper) Query(sql string, args ...interface{}) ([]Row, error) {
 	return results, err
 }
 
-func (h *DBHelper) IsExists(sql string, args ...interface{}) (ok bool, err error) {
+func (h *MySqlHelper) IsExists(sql string, args ...interface{}) (ok bool, err error) {
 	c, err := h.Count(sql, args...)
 	if err != nil {
 		return false, err
@@ -103,7 +167,7 @@ func (h *DBHelper) IsExists(sql string, args ...interface{}) (ok bool, err error
 	return false, err
 }
 
-func (h *DBHelper) Count(sql string, args ...interface{}) (c int64, err error) {
+func (h *MySqlHelper) Count(sql string, args ...interface{}) (c int64, err error) {
 	// if tmpsql := strings.ToUpper(sql); !strings.Contains(tmpsql, "COUNT(") {
 	// 	if fromIndex := strings.Index(tmpsql, "FROM"); fromIndex > 0 {
 	// 		sql = fmt.Sprintf("select count(*) %s", []byte(sql)[fromIndex:])
@@ -118,7 +182,7 @@ func (h *DBHelper) Count(sql string, args ...interface{}) (c int64, err error) {
 	return c, err
 }
 
-func (h *DBHelper) QueryPage(page *Page, sql string, args ...interface{}) error {
+func (h *MySqlHelper) QueryPage(page *Page, sql string, args ...interface{}) error {
 	//get count
 	count, err := h.Count(sql, args...)
 	if err != nil {

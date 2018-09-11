@@ -11,6 +11,13 @@ const (
 
 type Row map[string]interface{}
 
+func (r Row) IsExists(key string) bool {
+	if _, ok := r[key]; ok {
+		return true
+	}
+	return false
+}
+
 func (r Row) GetInt64(col string) int64 {
 	var value int64
 	switch v := r[col].(type) {
@@ -122,7 +129,9 @@ func (t Time) String() string {
 type Helper interface {
 	Exec(sql string, args ...interface{}) (rowsAffected int64, err error)
 	Insert(sql string, args ...interface{}) (lastInsterId int64, err error)
+	InsertRow(tableName string, row Row) (lastInsterId int64, err error)
 	Update(sql string, args ...interface{}) (rowsAffected int64, err error)
+	UpdateRow(tableName string, row Row) (rowsAffected int64, err error)
 	Delete(sql string, args ...interface{}) (rowsAffected int64, err error)
 	Count(sql string, args ...interface{}) (c int64, err error)
 	IsExists(sql string, args ...interface{}) (ok bool, err error)

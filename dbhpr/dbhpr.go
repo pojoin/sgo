@@ -33,7 +33,7 @@ func GetDB(dbname string) (*sql.DB, error) {
 }
 
 func NewHelper(dbname string) Helper {
-	return &DBHelper{
+	return &MySqlHelper{
 		dbname: dbname,
 	}
 }
@@ -48,9 +48,19 @@ func Insert(sql string, args ...interface{}) (lastInsterId int64, err error) {
 	return h.Insert(sql, args...)
 }
 
+func InsertRow(table string, row Row) (lastInsterId int64, err error) {
+	h := NewHelper("default")
+	return h.InsertRow(table, row)
+}
+
 func Update(sql string, args ...interface{}) (rowsAffected int64, err error) {
 	h := NewHelper("default")
 	return h.Update(sql, args...)
+}
+
+func UpdateRow(table string, row Row) (rowsAffected int64, err error) {
+	h := NewHelper("default")
+	return h.UpdateRow(table, row)
 }
 
 func Delete(sql string, args ...interface{}) (rowsAffected int64, err error) {
