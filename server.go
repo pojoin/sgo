@@ -238,10 +238,27 @@ func (s *Server) process(w http.ResponseWriter, req *http.Request) {
 		}
 		s.invoke(fn, ctx)
 	} else {
-		//请求不存在，404错误
-		ctx.Abort(404, "["+rp+"] page not fond")
+		defaultHtmlPath := path.Join(".", rp, "index.html")
+		if ok, _ := pathExists(defaultHtmlPath); ok {
+			ctx.WriteTpl(defaultHtmlPath)
+		} else {
+			//请求不存在，404错误
+			ctx.Abort(404, "["+rp+"] page not fond")
+		}
 	}
 
+}
+
+//判断文件或文件夹是否存在
+func pathExists(pathstr string) (bool, error) {
+	_, err := os.Stat(pathstr)
+	if err == nil {
+		return true, nil
+	}
+	if os.IsNotExist(err) {
+		return false, nil
+	}
+	return false, err
 }
 
 //提取参数 将请求参数转换成map类型
