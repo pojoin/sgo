@@ -126,6 +126,10 @@ func (t Time) String() string {
 	return time.Time(t).Format(timeFormart)
 }
 
+func (t Time) Format(df string) string {
+	return time.Time(t).Format(df)
+}
+
 type Helper interface {
 	Exec(sql string, args ...interface{}) (rowsAffected int64, err error)
 	Insert(sql string, args ...interface{}) (lastInsterId int64, err error)
