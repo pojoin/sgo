@@ -101,7 +101,7 @@ func (q *QBuilder) buildSql(columnstr string) string {
 	if len(where) > 0 {
 		where = "where " + where
 	}
-	query := fmt.Sprintf("select %v from %v %v %v %v %v", columnstr, q.tableName, q.join, where, q.groupby, q.orderby)
+	query := fmt.Sprintf("select %v from %v %v %v %v %v ", columnstr, q.tableName, q.join, where, q.groupby, q.orderby)
 	return query
 }
 
