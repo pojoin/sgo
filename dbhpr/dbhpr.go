@@ -92,20 +92,3 @@ func QueryPage(page *Page, sql string, args ...interface{}) error {
 	h := NewHelper("default")
 	return h.QueryPage(page, sql, args...)
 }
-
-func NewTx(dbname ...string) (*Tx, error) {
-	var db *sql.DB
-	if len(dbname) > 0 {
-		db = dbHive[dbname[0]]
-	} else {
-		db = dbHive["default"]
-	}
-	tmptx, err := db.Begin()
-	if err != nil {
-		return nil, err
-	}
-	tx := Tx{
-		tx: tmptx,
-	}
-	return &tx, nil
-}

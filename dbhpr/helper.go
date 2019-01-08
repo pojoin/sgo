@@ -2,6 +2,8 @@ package dbhpr
 
 import (
 	"errors"
+	"fmt"
+	"strconv"
 	"time"
 )
 
@@ -41,6 +43,14 @@ func (r Row) GetInt64(col string) int64 {
 		value = int64(v)
 	case int64:
 		value = v
+	case string:
+		v1, err := strconv.Atoi(v)
+		if err != nil {
+			fmt.Println(err)
+			return 0
+		}
+		value = int64(v1)
+
 	}
 	return value
 }
