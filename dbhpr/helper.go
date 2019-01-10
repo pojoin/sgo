@@ -46,7 +46,7 @@ func (r Row) GetInt64(col string) int64 {
 	case string:
 		v1, err := strconv.Atoi(v)
 		if err != nil {
-			fmt.Println(err)
+			fmt.Println("dbhpr error:", err)
 			return 0
 		}
 		value = int64(v1)
