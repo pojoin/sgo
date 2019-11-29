@@ -20,7 +20,7 @@ type Session struct {
 //创建session
 func newSession() *Session {
 	h := md5.New()
-	h.Write([]byte(fmt.Sprint("%d", time.Now().Unix())))
+	h.Write([]byte(fmt.Sprintf("%d", time.Now().Unix())))
 	sid := hex.EncodeToString(h.Sum(nil))
 	//log.Println("new Session sid = ", sid)
 	return &Session{sessionId: sid, data: make(map[string]interface{}), t: time.Now()}
